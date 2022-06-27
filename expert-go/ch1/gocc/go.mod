@@ -1,4 +1,4 @@
-module gocc
+module github.com/n-kurasawa/gocc
 
 go 1.17
 

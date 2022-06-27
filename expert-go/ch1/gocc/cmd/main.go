@@ -1,8 +1,7 @@
 package main
 
 import (
-	"gocc"
-
+	"github.com/n-kurasawa/gocc"
 	"golang.org/x/tools/go/analysis/singlechecker"
 )
 
