@@ -26,15 +26,33 @@ func main() {
 	utc, _ := time.LoadLocation("UTC")
 	jst, _ := time.LoadLocation("Asia/Tokyo")
 
-	createdAt := time.Date(2022, 7, 1, 0, 0, 0, 0, utc)
-	updatedAt := createdAt.In(jst)
+	jstDate := time.Date(2022, 7, 1, 0, 0, 0, 0, jst)
+	utcDate := jstDate.In(utc)
 
 	// Create
-	db.Create(&User{Name: "test", Age: 20, CreatedAt: createdAt, UpdatedAt: updatedAt})
+	db.Create(&User{Name: "test", Age: 20, CreatedAt: jstDate, UpdatedAt: utcDate})
 
 	// Read
-	user := User{}
-	db.First(&user, "name = ?", "test")
+	type CreatedAt struct {
+		CreatedAt time.Time
+	}
+	var jstCreatedAt CreatedAt
+	jstSQL := `
+		select created_at from users where date(convert_tz( created_at, '+00:00', 'Asia/Tokyo' )) = ?
+	`
+	if err := db.Raw(jstSQL, jstDate).Scan(&jstCreatedAt).Error; err != nil {
+		fmt.Println("jst err: ", err)
+	} else {
+		fmt.Println("jst: ", jstCreatedAt)
+	}
 
-	fmt.Println(user)
+	var utcCreatedAt CreatedAt
+	utcSQL := `
+		select created_at from users where created_at = ?
+	`
+	if err := db.Raw(utcSQL, utcDate).Scan(&utcCreatedAt).Error; err != nil {
+		fmt.Println("utc err: ", err)
+	} else {
+		fmt.Println("utc: ", utcCreatedAt.CreatedAt)
+	}
 }
