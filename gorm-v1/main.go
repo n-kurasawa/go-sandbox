@@ -1,37 +1,40 @@
 package main
 
 import (
+	"fmt"
+	"time"
+
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
-type Product struct {
-	gorm.Model
-	Code  string
-	Price uint
+type User struct {
+	Name      string
+	Age       uint
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func main() {
-	db, err := gorm.Open("sqlite3", "test.db")
+	db, err := gorm.Open("mysql", "root:root@(localhost)/gorm_sample?charset=utf8&parseTime=True")
 	if err != nil {
 		panic("データベースへの接続に失敗しました")
 	}
 	defer db.Close()
+	db.LogMode(true)
 
-	// スキーマのマイグレーション
-	db.AutoMigrate(&Product{})
+	utc, _ := time.LoadLocation("UTC")
+	jst, _ := time.LoadLocation("Asia/Tokyo")
+
+	createdAt := time.Date(2022, 7, 1, 0, 0, 0, 0, utc)
+	updatedAt := createdAt.In(jst)
 
 	// Create
-	db.Create(&Product{Code: "L1212", Price: 1000})
+	db.Create(&User{Name: "test", Age: 20, CreatedAt: createdAt, UpdatedAt: updatedAt})
 
 	// Read
-	var product Product
-	db.First(&product, 1)                   // idが1の製品を探します
-	db.First(&product, "code = ?", "L1212") // codeがL1212の製品を探します
+	user := User{}
+	db.First(&user, "name = ?", "test")
 
-	// Update - 製品価格を2,000に更新します
-	db.Model(&product).Update("Price", 2000)
-
-	// Delete - 製品を削除します
-	db.Delete(&product)
+	fmt.Println(user)
 }
