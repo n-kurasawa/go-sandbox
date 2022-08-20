@@ -23,18 +23,25 @@ func main() {
 
 	utc, _ := time.LoadLocation("UTC")
 	utcDatetime := time.Date(2022, 8, 20, 0, 0, 0, 0, utc)
-
-	var utcResult sample
-	if err := db.QueryRow("select id, datetime from sample_table where datetime = ?", utcDatetime).Scan(&utcResult.id, &utcResult.datetime); err != nil {
-		log.Fatal("failed QueryRow: ", err)
+	if result, err := findByDatetime(db, utcDatetime); err == nil {
+		fmt.Printf("[utc] id: %d, datetime: %v\n", result.id, result.datetime)
+	} else {
+		fmt.Println("[utc]", err)
 	}
-	fmt.Printf("id: %d, datetime: %v\n", utcResult.id, utcResult.datetime)
 
 	jst, _ := time.LoadLocation("Asia/Tokyo")
 	jstDatetime := time.Date(2022, 8, 20, 9, 0, 0, 0, jst)
-	var jstResult sample
-	if err := db.QueryRow("select id, datetime from sample_table where convert_tz(datetime, 'UTC', 'Asia/Tokyo') = ?", jstDatetime).Scan(&jstResult.id, &jstResult.datetime); err != nil {
-		log.Fatal("failed QueryRow: ", err)
+	if result, err := findByDatetime(db, jstDatetime); err == nil {
+		fmt.Printf("[jst] id: %d, datetime: %v\n", result.id, result.datetime)
+	} else {
+		fmt.Println("[jst]", err)
 	}
-	fmt.Printf("id: %d, datetime: %v\n", jstResult.id, jstResult.datetime)
+}
+
+func findByDatetime(db *sql.DB, dateTime time.Time) (sample, error) {
+	var result sample
+	if err := db.QueryRow("select id, datetime from sample_table where datetime = ?", dateTime).Scan(&result.id, &result.datetime); err != nil {
+		return sample{}, fmt.Errorf("failed QueryRow: %w", err)
+	}
+	return result, nil
 }
