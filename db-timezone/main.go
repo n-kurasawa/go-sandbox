@@ -24,17 +24,23 @@ func main() {
 	utc, _ := time.LoadLocation("UTC")
 	utcDatetime := time.Date(2022, 8, 20, 0, 0, 0, 0, utc)
 	if result, err := findByDatetime(db, utcDatetime); err == nil {
-		fmt.Printf("[utc] id: %d, datetime: %v\n", result.id, result.datetime)
+		fmt.Printf("[1] id: %d, datetime: %v\n", result.id, result.datetime)
 	} else {
-		fmt.Println("[utc]", err)
+		fmt.Println("[1]", err)
 	}
 
 	jst, _ := time.LoadLocation("Asia/Tokyo")
-	jstDatetime := time.Date(2022, 8, 20, 9, 0, 0, 0, jst)
+	jstDatetime := time.Date(2022, 8, 20, 0, 0, 0, 0, jst)
 	if result, err := findByDatetime(db, jstDatetime); err == nil {
-		fmt.Printf("[jst] id: %d, datetime: %v\n", result.id, result.datetime)
+		fmt.Printf("[2] id: %d, datetime: %v\n", result.id, result.datetime)
 	} else {
-		fmt.Println("[jst]", err)
+		fmt.Println("[2]", err)
+	}
+
+	if result, err := findByDatetime(db, utcDatetime.In(jst)); err == nil {
+		fmt.Printf("[3] id: %d, datetime: %v\n", result.id, result.datetime)
+	} else {
+		fmt.Println("[3]", err)
 	}
 }
 
