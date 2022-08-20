@@ -21,6 +21,7 @@ func main() {
 	}
 	defer db.Close()
 
+	// [1] UTC の 2022-08-20 00:00:00 で検索
 	utc, _ := time.LoadLocation("UTC")
 	utcDatetime := time.Date(2022, 8, 20, 0, 0, 0, 0, utc)
 	if result, err := findByDatetime(db, utcDatetime); err == nil {
@@ -29,6 +30,7 @@ func main() {
 		fmt.Println("[1]", err)
 	}
 
+	// [2] JST の 2022-08-20 00:00:00 で検索
 	jst, _ := time.LoadLocation("Asia/Tokyo")
 	jstDatetime := time.Date(2022, 8, 20, 0, 0, 0, 0, jst)
 	if result, err := findByDatetime(db, jstDatetime); err == nil {
@@ -37,6 +39,7 @@ func main() {
 		fmt.Println("[2]", err)
 	}
 
+	// [3] UTC の 2022-08-20 00:00:00 を JST にして検索
 	if result, err := findByDatetime(db, utcDatetime.In(jst)); err == nil {
 		fmt.Printf("[3] id: %d, datetime: %v\n", result.id, result.datetime)
 	} else {
