@@ -50,7 +50,7 @@ func main() {
 func findByDatetime(db *sql.DB, datetime time.Time) (sample, error) {
 	var result sample
 	if err := db.QueryRow("select id, datetime from sample_table where datetime = ?", datetime).Scan(&result.id, &result.datetime); err != nil {
-		return sample{}, fmt.Errorf("failed QueryRow: %w", err)
+		return sample{}, err
 	}
 	return result, nil
 }

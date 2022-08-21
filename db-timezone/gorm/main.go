@@ -56,7 +56,7 @@ func main() {
 func findByDatetime(db *gorm.DB, time time.Time) (sample, error) {
 	var result sample
 	if err := db.Where("datetime = ?", time).First(&result).Error; err != nil {
-		return sample{}, nil
+		return sample{}, err
 	}
 	return result, nil
 }
