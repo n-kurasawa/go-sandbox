@@ -27,18 +27,36 @@ func main() {
 		log.Fatal("unable to use data source name", err)
 	}
 
+	// [1] UTC の 2022-08-20 00:00:00 で検索
 	utc, _ := time.LoadLocation("UTC")
 	utcTime := time.Date(2022, 8, 20, 0, 0, 0, 0, utc)
-	var utcResult sample
-	db.Where("datetime = ?", utcTime).First(&utcResult)
-	fmt.Printf("[1] id: %d, datetime: %v\n", utcResult.ID, utcResult.Datetime)
+	if result, err := findByDatetime(db, utcTime); err == nil {
+		fmt.Printf("[1] id: %d, datetime: %v\n", result.ID, result.Datetime)
+	} else {
+		fmt.Println("[1]", err)
+	}
 
+	// [2] JST の 2022-08-20 00:00:00 で検索
 	jst, _ := time.LoadLocation("Asia/Tokyo")
 	jstTime := time.Date(2022, 8, 20, 0, 0, 0, 0, jst)
-	var jstResult sample
-	if err := db.Where("datetime = ?", jstTime).First(&jstResult).Error; err == nil {
-		fmt.Printf("[1] id: %d, datetime: %v\n", jstResult.ID, jstResult.Datetime)
+	if result, err := findByDatetime(db, jstTime); err == nil {
+		fmt.Printf("[2] id: %d, datetime: %v\n", result.ID, result.Datetime)
 	} else {
-		fmt.Println(err)
+		fmt.Println("[2]", err)
 	}
+
+	// [3] UTC の 2022-08-20 00:00:00 を JST にして検索
+	if result, err := findByDatetime(db, utcTime.In(jst)); err == nil {
+		fmt.Printf("[3] id: %d, datetime: %v\n", result.ID, result.Datetime)
+	} else {
+		fmt.Println("[3]", err)
+	}
+}
+
+func findByDatetime(db *gorm.DB, time time.Time) (sample, error) {
+	var result sample
+	if err := db.Where("datetime = ?", time).First(&result).Error; err != nil {
+		return sample{}, nil
+	}
+	return result, nil
 }
